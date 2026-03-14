@@ -12,14 +12,15 @@ HEADERS = {
 CATEGORY_URLS = [
     "https://www.sport5.co.il/basketball.aspx",
     "https://www.sport5.co.il/tennis.aspx",
-    "https://www.sport5.co.il/football.aspx",
-    "https://www.sport5.co.il/",
+    "https://www.sport5.co.il/liga.aspx?FolderID=257",   # ליגת העל
+    "https://www.sport5.co.il/liga.aspx?FolderID=397",   # ליגת האלופות
 ]
 
 CATEGORY_MAP = {
     "basketball": "basketball",
     "tennis": "tennis",
-    "football": "football",
+    "FolderID=257": "israeli_premier_league",
+    "FolderID=397": "champions_league",
 }
 
 
@@ -125,7 +126,7 @@ def fetch_article_content(articles, max_articles=25):
 
             article["content"] = " ".join(paragraphs)
             article["timestamp"] = _extract_timestamp(soup)
-            time.sleep(0.5)
+            time.sleep(0.3)
         except Exception as e:
             print(f"Warning: failed to fetch {article['url']}: {e}")
 
