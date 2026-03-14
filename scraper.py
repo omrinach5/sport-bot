@@ -44,6 +44,12 @@ def scrape_categories(urls=None):
             response = requests.get(url, headers=HEADERS, timeout=10)
             soup = BeautifulSoup(response.text, "html.parser")
 
+            # Debug: show what tags exist on the page
+            all_links = soup.find_all("a", href=True, limit=100)
+            print(f"  [{category}] page has {len(all_links)} links")
+            for link in all_links[:5]:
+                print(f"    sample: '{link.get_text(strip=True)[:50]}' -> {link.get('href', '')[:60]}")
+
             for tag in soup.find_all(["h1", "h2", "h3", "a"], limit=50):
                 text = tag.get_text(strip=True)
                 href = tag.get("href", "")
