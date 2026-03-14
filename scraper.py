@@ -12,15 +12,13 @@ HEADERS = {
 CATEGORY_URLS = [
     "https://www.sport5.co.il/basketball.aspx",
     "https://www.sport5.co.il/tennis.aspx",
-    "https://www.sport5.co.il/liga.aspx?FolderID=257",   # ליגת העל
-    "https://www.sport5.co.il/liga.aspx?FolderID=397",   # ליגת האלופות
+    "https://www.sport5.co.il/football.aspx",
 ]
 
 CATEGORY_MAP = {
     "basketball": "basketball",
     "tennis": "tennis",
-    "FolderID=257": "israeli_premier_league",
-    "FolderID=397": "champions_league",
+    "football": "football",
 }
 
 
@@ -65,9 +63,12 @@ def scrape_categories(urls=None):
                     "content": "",
                     "timestamp": None,
                 })
+            count = len(articles) - len(seen_titles) + len(seen_titles)
+            print(f"  [{category}] found articles from {url}")
         except Exception as e:
             print(f"Warning: failed to scrape {url}: {e}")
 
+    print(f"Total scraped: {len(articles)} articles")
     return articles
 
 
