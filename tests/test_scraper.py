@@ -1,5 +1,7 @@
 from unittest.mock import patch, MagicMock
-from scraper import scrape_categories, fetch_article_content
+from datetime import datetime, timezone, timedelta
+from bs4 import BeautifulSoup
+from scraper import scrape_categories, fetch_article_content, filter_recent, _extract_timestamp
 
 FAKE_BASKETBALL_HTML = """
 <html><body>
@@ -76,3 +78,46 @@ def test_fetch_article_content_limits_articles(mock_get, mock_sleep):
     ]
     result = fetch_article_content(articles, max_articles=25)
     assert len(result) == 25
+
+
+FAKE_ARTICLE_WITH_TIME = """
+<html><body>
+<time datetime="2026-03-14T10:30:00">14/03/2026 10:30</time>
+<article><p>Some content here for the article body text.</p></article>
+</body></html>
+"""
+
+FAKE_ARTICLE_NO_TIME = """
+<html><body>
+<article><p>Article without any timestamp element at all.</p></article>
+</body></html>
+"""
+
+
+def test_extract_timestamp_from_time_element():
+    soup = BeautifulSoup(FAKE_ARTICLE_WITH_TIME, "html.parser")
+    ts = _extract_timestamp(soup)
+    assert ts is not None
+    assert ts.year == 2026
+    assert ts.month == 3
+    assert ts.day == 14
+
+
+def test_extract_timestamp_returns_none_when_missing():
+    soup = BeautifulSoup(FAKE_ARTICLE_NO_TIME, "html.parser")
+    ts = _extract_timestamp(soup)
+    assert ts is None
+
+
+def test_filter_recent_keeps_recent_articles():
+    now = datetime.now(timezone.utc)
+    articles = [
+        {"title": "Recent", "timestamp": now - timedelta(hours=2), "content": "x", "url": "u", "category": "c"},
+        {"title": "Old", "timestamp": now - timedelta(hours=20), "content": "x", "url": "u", "category": "c"},
+        {"title": "No time", "timestamp": None, "content": "x", "url": "u", "category": "c"},
+    ]
+    result = filter_recent(articles, hours=12)
+    titles = [a["title"] for a in result]
+    assert "Recent" in titles
+    assert "Old" not in titles
+    assert "No time" in titles

@@ -70,9 +70,40 @@ def scrape_categories(urls=None):
     return articles
 
 
+IST = timezone(timedelta(hours=3))
+
+
 def _extract_timestamp(soup):
-    """Try to extract article publish timestamp. Full implementation in Task 3."""
+    """Try to extract article publish timestamp from HTML."""
+    time_tag = soup.find("time", attrs={"datetime": True})
+    if time_tag:
+        try:
+            dt_str = time_tag["datetime"]
+            dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=IST)
+            return dt.astimezone(timezone.utc)
+        except (ValueError, KeyError):
+            pass
+
+    for meta_name in ["article:published_time", "og:updated_time", "pubdate"]:
+        meta = soup.find("meta", attrs={"property": meta_name}) or soup.find("meta", attrs={"name": meta_name})
+        if meta and meta.get("content"):
+            try:
+                dt = datetime.fromisoformat(meta["content"].replace("Z", "+00:00"))
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=IST)
+                return dt.astimezone(timezone.utc)
+            except (ValueError, KeyError):
+                pass
+
     return None
+
+
+def filter_recent(articles, hours=12):
+    """Keep only articles from the last N hours. Include articles with no timestamp."""
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+    return [a for a in articles if a["timestamp"] is None or a["timestamp"] >= cutoff]
 
 
 def fetch_article_content(articles, max_articles=25):
