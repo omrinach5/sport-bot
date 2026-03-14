@@ -6,7 +6,9 @@ import requests
 from bs4 import BeautifulSoup
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "he-IL,he;q=0.9,en;q=0.8",
 }
 
 CATEGORY_URLS = [
@@ -44,11 +46,17 @@ def scrape_categories(urls=None):
             response = requests.get(url, headers=HEADERS, timeout=10)
             soup = BeautifulSoup(response.text, "html.parser")
 
-            # Debug: show what tags exist on the page
+            # Debug: show page info
+            print(f"  [{category}] status={response.status_code}, size={len(response.text)} chars")
+            title = soup.find("title")
+            print(f"  [{category}] title: {title.get_text(strip=True)[:60] if title else 'none'}")
             all_links = soup.find_all("a", href=True, limit=100)
-            print(f"  [{category}] page has {len(all_links)} links")
-            for link in all_links[:5]:
-                print(f"    sample: '{link.get_text(strip=True)[:50]}' -> {link.get('href', '')[:60]}")
+            print(f"  [{category}] found {len(all_links)} links on page")
+            # Show first 300 chars of body text
+            body = soup.find("body")
+            if body:
+                body_text = body.get_text(strip=True)[:300]
+                print(f"  [{category}] body preview: {body_text[:150]}")
 
             for tag in soup.find_all(["h1", "h2", "h3", "a"], limit=50):
                 text = tag.get_text(strip=True)
