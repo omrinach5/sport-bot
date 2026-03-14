@@ -68,3 +68,34 @@ def scrape_categories(urls=None):
             print(f"Warning: failed to scrape {url}: {e}")
 
     return articles
+
+
+def _extract_timestamp(soup):
+    """Try to extract article publish timestamp. Full implementation in Task 3."""
+    return None
+
+
+def fetch_article_content(articles, max_articles=25):
+    """Fetch first 2-3 paragraphs of content for each article."""
+    results = [dict(a) for a in articles[:max_articles]]
+
+    for article in results:
+        try:
+            response = requests.get(article["url"], headers=HEADERS, timeout=10)
+            soup = BeautifulSoup(response.text, "html.parser")
+
+            paragraphs = []
+            for p in soup.find_all("p", limit=5):
+                text = p.get_text(strip=True)
+                if len(text) > 30:
+                    paragraphs.append(text)
+                if len(paragraphs) >= 3:
+                    break
+
+            article["content"] = " ".join(paragraphs)
+            article["timestamp"] = _extract_timestamp(soup)
+            time.sleep(0.5)
+        except Exception as e:
+            print(f"Warning: failed to fetch {article['url']}: {e}")
+
+    return results
