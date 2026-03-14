@@ -1,3 +1,4 @@
+import re
 import time
 
 import google.generativeai as genai
@@ -31,13 +32,21 @@ PROMPT_TEMPLATE = """אתה עוזר ספורט אישי. קיבלת תוכן כ
 - מקסימום 20 פריטים סה"כ
 - כתוב בעברית בלבד, מימין לשמאל (RTL)
 - עבור כתבות מקטגוריה 'general' (דף הבית), קבע את הליגה/תחרות לפי תוכן הכתבה עצמה
-- השתמש בפורמט HTML:
+- השתמש בפורמט HTML מוגבל בלבד. תגיות מותרות: <b>, <i>, <a href="...">, <code>, <pre>. אסור להשתמש ב-<div>, <span>, <p>, <br>, <ul>, <li> או כל תגית אחרת!
+- פורמט הפלט:
   <b>🏀 יורוליג</b>
   • פריט אינפורמטיבי (<a href="URL">קישור</a>)
 
   <b>⚽ פרמייר ליג</b>
   • פריט אינפורמטיבי (<a href="URL">קישור</a>)
 """
+
+
+def _sanitize_html(text):
+    """Strip HTML tags not supported by Telegram (only <b>, <i>, <a>, <code>, <pre> allowed)."""
+    # Remove unsupported tags but keep their content
+    text = re.sub(r'</?(?!b|/b|i|/i|a|/a|code|/code|pre|/pre)[^>]+>', '', text)
+    return text.strip()
 
 
 def summarize(articles, api_key):
@@ -58,7 +67,7 @@ def summarize(articles, api_key):
     for attempt in range(2):
         try:
             response = model.generate_content(prompt)
-            return response.text
+            return _sanitize_html(response.text)
         except Exception as e:
             if attempt == 0:
                 print(f"Gemini API error, retrying in 5s: {e}")
