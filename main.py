@@ -47,7 +47,7 @@ def scrape_sport5():
 
 def summarize_with_gemini(articles):
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash")
     articles_text = "\n".join([f"- {a['title']} | {a['url']}" for a in articles])
     prompt = f"""אתה עוזר ספורט אישי. קיבלת רשימת כתבות מאתר ספורט 5.
 
