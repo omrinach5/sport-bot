@@ -22,7 +22,7 @@ def _mock_response(html):
 @patch("scraper.requests.get")
 def test_scrape_categories_extracts_articles(mock_get):
     mock_get.return_value = _mock_response(FAKE_BASKETBALL_HTML)
-    articles = scrape_categories(["https://www.sport5.co.il/basketball.aspx"])
+    articles = scrape_categories(["https://www.sport5.co.il/world.aspx?FolderID=4467"])
     assert len(articles) == 2
     assert articles[0]["title"] == "מכבי ניצחה את הפועל 89-76"
     assert articles[0]["url"] == "https://www.sport5.co.il/articles/basketball/123.aspx"
@@ -32,7 +32,7 @@ def test_scrape_categories_extracts_articles(mock_get):
 @patch("scraper.requests.get")
 def test_scrape_categories_skips_short_titles(mock_get):
     mock_get.return_value = _mock_response(FAKE_BASKETBALL_HTML)
-    articles = scrape_categories(["https://www.sport5.co.il/basketball.aspx"])
+    articles = scrape_categories(["https://www.sport5.co.il/world.aspx?FolderID=4467"])
     titles = [a["title"] for a in articles]
     assert "קצר" not in titles
 

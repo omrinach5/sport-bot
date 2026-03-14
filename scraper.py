@@ -12,21 +12,28 @@ HEADERS = {
 }
 
 CATEGORY_URLS = [
-    "https://www.sport5.co.il/basketball.aspx",
-    "https://www.sport5.co.il/tennis.aspx",
-    "https://www.sport5.co.il/football.aspx",
+    "https://www.sport5.co.il/world.aspx?FolderID=4467",  # כדורסל
+    "https://www.sport5.co.il/liga.aspx?FolderID=404",     # יורוליג
+    "https://www.sport5.co.il/liga.aspx?FolderID=5991",    # ישראלים ב-NBA
+    "https://www.sport5.co.il/world.aspx?FolderID=4498",   # טניס (ענפים נוספים)
+    "https://www.sport5.co.il/liga.aspx?FolderID=44",      # ליגת העל
+    "https://www.sport5.co.il/liga.aspx?FolderID=397",     # ליגת האלופות
 ]
 
 CATEGORY_MAP = {
-    "basketball": "basketball",
-    "tennis": "tennis",
-    "football": "football",
+    "FolderID=4467": "basketball",
+    "FolderID=404": "euroleague",
+    "FolderID=5991": "nba",
+    "FolderID=4498": "tennis",
+    "FolderID=44": "israeli_premier_league",
+    "FolderID=397": "champions_league",
 }
 
 
 def _detect_category(url):
     """Detect sport category from URL."""
-    for keyword, category in CATEGORY_MAP.items():
+    # Check longer FolderIDs first to avoid partial matches (44 vs 4467)
+    for keyword, category in sorted(CATEGORY_MAP.items(), key=lambda x: len(x[0]), reverse=True):
         if keyword in url:
             return category
     return "general"
