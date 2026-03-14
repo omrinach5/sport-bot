@@ -26,7 +26,7 @@ def main():
 
     # 2. Fetch article content
     print("Fetching article content...")
-    articles = fetch_article_content(articles, max_articles=15)
+    articles = fetch_article_content(articles)
 
     # 3. Filter to last 12 hours
     articles = filter_recent(articles, hours=12)
