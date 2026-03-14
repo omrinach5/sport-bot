@@ -55,17 +55,23 @@ def scrape_categories(urls=None):
 
             # Debug: show page info
             print(f"  [{category}] status={response.status_code}, size={len(response.text)} chars")
-            title = soup.find("title")
-            print(f"  [{category}] title: {title.get_text(strip=True)[:60] if title else 'none'}")
-            all_links = soup.find_all("a", href=True, limit=100)
-            print(f"  [{category}] found {len(all_links)} links on page")
-            # Show first 300 chars of body text
-            body = soup.find("body")
-            if body:
-                body_text = body.get_text(strip=True)[:300]
-                print(f"  [{category}] body preview: {body_text[:150]}")
 
-            for tag in soup.find_all(["h1", "h2", "h3", "a"], limit=50):
+            # Look for article data in script tags (SSR data)
+            for script in soup.find_all("script"):
+                script_text = script.string or ""
+                if "docID" in script_text or "ArticleTitle" in script_text or "articleTitle" in script_text:
+                    print(f"  [{category}] found article data in script tag ({len(script_text)} chars)")
+                    print(f"  [{category}] script preview: {script_text[:200]}")
+                    break
+
+            # Try finding articles via all links with articles.aspx or docID
+            all_links = soup.find_all("a", href=True)
+            article_links = [a for a in all_links if "articles.aspx" in a.get("href", "") or "docID" in a.get("href", "")]
+            print(f"  [{category}] total links: {len(all_links)}, article links: {len(article_links)}")
+            for link in article_links[:3]:
+                print(f"    sample article: '{link.get_text(strip=True)[:60]}' -> {link.get('href', '')[:80]}")
+
+            for tag in soup.find_all("a", href=True, limit=200):
                 text = tag.get_text(strip=True)
                 href = tag.get("href", "")
 
